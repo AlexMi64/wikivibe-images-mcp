@@ -19,11 +19,9 @@ MCP-сервер для генерации и редактирования из�
 
 ## Быстрый старт
 
-Пакет ещё не опубликован в npm, поэтому ставим прямо из репозитория:
-
 ```bash
-npx -y github:AlexMi64/wikivibe-images-mcp login        # сохранить ключ (один раз)
-npx -y github:AlexMi64/wikivibe-images-mcp setup all    # прописать сервер во все агенты
+npx -y wikivibe-images-mcp login        # сохранить ключ (один раз)
+npx -y wikivibe-images-mcp setup all    # прописать сервер во все агенты
 ```
 
 Перезапустить агент и попросить:
@@ -35,7 +33,7 @@ npx -y github:AlexMi64/wikivibe-images-mcp setup all    # прописать с�
 `setup` без аргументов или с `all` обходит все клиенты; можно указать выборочно:
 
 ```bash
-npx -y github:AlexMi64/wikivibe-images-mcp setup omp codex
+npx -y wikivibe-images-mcp setup omp codex
 ```
 
 Доступные имена: `omp`, `claude`, `codex`, `cursor`, `opencode` (она же `orca`).
@@ -47,7 +45,7 @@ npx -y github:AlexMi64/wikivibe-images-mcp setup omp codex
 ## Ручная настройка
 
 Если не хотите запускать `setup`, добавьте сервер сами. Везде ниже используется
-стабильная копия; вместо неё можно указать `npx -y github:AlexMi64/wikivibe-images-mcp mcp`.
+стабильная копия; вместо неё можно указать `npx -y wikivibe-images-mcp mcp`.
 
 **OMP** — `~/.omp/agent/mcp.json`:
 
@@ -201,6 +199,11 @@ printf '%s\n' \
 | `src/images.ts` | генерация, редактирование, сохранение файлов |
 | `src/api.ts` | HTTP-клиент: очередь, backoff, разбор ошибок |
 | `src/credentials.ts` | хранение и поиск ключа |
+
+## Ссылки
+
+- npm: https://www.npmjs.com/package/wikivibe-images-mcp
+- исходники: https://github.com/AlexMi64/wikivibe-images-mcp
 
 ## Лицензия
 
