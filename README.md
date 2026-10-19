@@ -9,38 +9,45 @@ MCP-сервер для генерации и редактирования из�
 ```
 ┌──────────────┐
 │ OMP          │─┐
-│ Codex CLI    │─┤   stdio    ┌───────────────┐   HTTPS   ┌──────────────────┐
-│ Claude Code  │─┼───────────▶│wikivibe-images│──────────▶│ api.wikivibe.ru  │
-│ Cursor       │─┤            │  (один бинарь)│           │ /images/…        │
-│ opencode     │─┘            └───────┬───────┘           └──────────────────┘
-└──────────────┘                      │
+│ Codex CLI    │─┤   stdio    ┌────────────────┐   HTTPS   ┌──────────────────┐
+│ Claude Code  │─┼───────────▶│wikivibe-images │──────────▶│ api.wikivibe.ru  │
+│ Cursor       │─┤            │  (один бандл)  │           │ /images/…        │
+│ opencode     │─┘            └────────┬───────┘           └──────────────────┘
+└──────────────┘                       │
                               ~/.wikivibe/credentials.json (0600)
 ```
 
 ## Быстрый старт
 
+Пакет ещё не опубликован в npm, поэтому ставим прямо из репозитория:
+
 ```bash
-npx -y wikivibe-images-mcp login        # сохранить ключ (один раз)
-npx -y wikivibe-images-mcp setup all    # прописать сервер во все найденные агенты
+npx -y github:AlexMi64/wikivibe-images-mcp login        # сохранить ключ (один раз)
+npx -y github:AlexMi64/wikivibe-images-mcp setup all    # прописать сервер во все агенты
 ```
 
 Перезапустить агент и попросить:
 
 > сделай картинку через wikivibe: рыжий кот в космическом шлеме, фотореализм
 
-Агент вызовет `generate_image`, получит путь к файлу и сам покажет картинку.
+Агент вызовет `generate_image`, получит путь к файлу и покажет картинку.
 
 `setup` без аргументов или с `all` обходит все клиенты; можно указать выборочно:
 
 ```bash
-npx -y wikivibe-images-mcp setup omp codex
+npx -y github:AlexMi64/wikivibe-images-mcp setup omp codex
 ```
 
 Доступные имена: `omp`, `claude`, `codex`, `cursor`, `opencode` (она же `orca`).
 
+`setup` копирует собранный сервер в `~/.wikivibe/bin/wikivibe-images-mcp.js` и прописывает
+именно этот путь. Конфиги агентов не зависят ни от каталога репозитория, ни от кэша `npx`:
+после обновления достаточно заново выполнить `setup`.
+
 ## Ручная настройка
 
-Если не хотите запускать `setup`, добавьте сервер сами.
+Если не хотите запускать `setup`, добавьте сервер сами. Везде ниже используется
+стабильная копия; вместо неё можно указать `npx -y github:AlexMi64/wikivibe-images-mcp mcp`.
 
 **OMP** — `~/.omp/agent/mcp.json`:
 
@@ -48,8 +55,8 @@ npx -y wikivibe-images-mcp setup omp codex
 {
   "mcpServers": {
     "wikivibe": {
-      "command": "npx",
-      "args": ["-y", "wikivibe-images-mcp", "mcp"],
+      "command": "node",
+      "args": ["/Users/YOU/.wikivibe/bin/wikivibe-images-mcp.js", "mcp"],
       "timeout": 300000
     }
   }
@@ -60,15 +67,15 @@ npx -y wikivibe-images-mcp setup omp codex
 
 ```toml
 [mcp_servers.wikivibe]
-command = "npx"
-args = ["-y", "wikivibe-images-mcp", "mcp"]
+command = "node"
+args = ["/Users/YOU/.wikivibe/bin/wikivibe-images-mcp.js", "mcp"]
 tool_timeout_sec = 300
 ```
 
 **Claude Code**:
 
 ```bash
-claude mcp add --scope user wikivibe -- npx -y wikivibe-images-mcp mcp
+claude mcp add --scope user wikivibe -- node ~/.wikivibe/bin/wikivibe-images-mcp.js mcp
 ```
 
 **Cursor** — `~/.cursor/mcp.json`: тот же JSON, что и для OMP.
@@ -80,16 +87,16 @@ claude mcp add --scope user wikivibe -- npx -y wikivibe-images-mcp mcp
   "mcp": {
     "wikivibe": {
       "type": "local",
-      "command": ["npx", "-y", "wikivibe-images-mcp", "mcp"],
+      "command": ["node", "/Users/YOU/.wikivibe/bin/wikivibe-images-mcp.js", "mcp"],
       "enabled": true
     }
   }
 }
 ```
 
-> Таймауты. Генерация одной картинки занимает 25–45 секунд. Клиенты по умолчанию рубают
-> MCP-вызов раньше, поэтому в OMP нужен `"timeout": 300000`, в Codex — `tool_timeout_sec = 300`,
-> в Claude Code — переменная `MCP_TOOL_TIMEOUT=300000` в окружении.
+> **Таймауты.** Генерация одной картинки занимает 25–45 секунд, а клиенты по умолчанию
+> обрывают MCP-вызов раньше. Поэтому в OMP нужен `"timeout": 300000`, в Codex —
+> `tool_timeout_sec = 300`, в Claude Code — `MCP_TOOL_TIMEOUT=300000` в окружении.
 
 ## Инструменты
 
@@ -99,8 +106,8 @@ claude mcp add --scope user wikivibe -- npx -y wikivibe-images-mcp mcp
 | `edit_image` | `prompt`, `images[]`, `n`, `model`, `size`, `quality`, `output_path` | правит локальные файлы (inpainting, restyle, замена объектов) |
 | `list_image_models` | — | какие image-модели доступны ключу |
 
-Каждый результат: путь к файлу на диске **и** сам файл как MCP image-блок — картинку видно
-и в агентах без доступа к файловой системе.
+Каждый результат — путь к файлу на диске **и** сам файл как MCP image-блок, поэтому картинку
+видно и в агентах без доступа к файловой системе.
 
 ### Несколько картинок за один вызов
 
@@ -113,8 +120,9 @@ claude mcp add --scope user wikivibe -- npx -y wikivibe-images-mcp mcp
 ```
 
 Максимум **4 изображения за вызов**. Запросы идут строго последовательно: API WikiVibe
-не принимает `n > 1` для `gpt-image-*`, а параллельные вызовы роняют апстрим в 502.
-Время растёт линейно — примерно 25–45 секунд на картинку.
+не принимает `n > 1` для `gpt-image-*` (апстрим отвечает `unknown_parameter: tools[0].n`),
+а параллельные вызовы роняют его в 502. Время растёт линейно — примерно 25–45 секунд
+на картинку.
 
 ## Ключ API
 
@@ -122,10 +130,10 @@ claude mcp add --scope user wikivibe -- npx -y wikivibe-images-mcp mcp
 В конфиги агентов он не попадает — там лишь команда запуска.
 
 ```bash
-npx -y wikivibe-images-mcp login          # интерактивно, ввод скрыт
-npx -y wikivibe-images-mcp login --key sk-…   # для CI
-npx -y wikivibe-images-mcp import         # подхватить WIKIVIBE_API_KEY из ~/.omp/.env или ./.env
-npx -y wikivibe-images-mcp status         # проверить ключ, base URL и доступные модели
+wikivibe-images login                  # интерактивно, ввод скрыт
+wikivibe-images login --key sk-…       # для CI
+wikivibe-images import                 # подхватить WIKIVIBE_API_KEY из ~/.omp/.env или ./.env
+wikivibe-images status                 # проверить ключ, base URL и доступные модели
 ```
 
 Приоритет источников: `WIKIVIBE_API_KEY` → `~/.wikivibe/credentials.json`.
@@ -143,17 +151,23 @@ npx -y wikivibe-images-mcp status         # проверить ключ, base UR
 ## CLI без агента
 
 ```bash
-npx -y wikivibe-images-mcp image "постер: закат над морем, минимализм"
-npx -y wikivibe-images-mcp models
+wikivibe-images image "постер: закат над морем, минимализм"
+wikivibe-images models
+```
+
+`wikivibe-images` — это тот же файл, что лежит в `~/.wikivibe/bin/`. Можно добавить в `PATH`:
+
+```bash
+ln -s ~/.wikivibe/bin/wikivibe-images-mcp.js /usr/local/bin/wikivibe-images
 ```
 
 ## Ошибки
 
 | Что видно | Причина и что делать |
 |---|---|
-| `401` / `Unauthorized` | ключ неверный или отозван → `wikivibe login` |
+| `401` / `Unauthorized` | ключ неверный или отозван → `wikivibe-images login` |
 | `403 image generation is disabled for this group` | у группы ключа выключен `allow_image_generation` → включить в кабинете WikiVibe |
-| `400 unknown_parameter: 'tools[0].n'` | апстрим не принимает `n > 1`; сервер сам разбивает на последовательные запросы — обновите версию |
+| `400 unknown_parameter: 'tools[0].n'` | апстрим не принимает `n > 1`; сервер сам разбивает на последовательные запросы — обновитесь и перезапустите `setup` |
 | `502` / `503` | перегружен апстрим-провайдер; клиент делает одну повторную попытку через 12 с. Не запускайте несколько генераций параллельно |
 | клиент оборвал вызов по таймауту | поднимите лимит MCP: `timeout` в OMP, `tool_timeout_sec` в Codex, `MCP_TOOL_TIMEOUT` в Claude Code |
 
@@ -166,6 +180,7 @@ npm install
 npm run typecheck
 npm run build      # esbuild → dist/cli.js, самодостаточный бандл
 node dist/cli.js status
+node dist/cli.js setup omp
 ```
 
 Проверка MCP-протокола вручную:

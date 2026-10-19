@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
+import { chmod, copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
-import { join, sep } from "node:path";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+	configDir,
 	credentialsPath,
 	DEFAULT_BASE_URL,
 	importKeyFromOmpEnv,
@@ -29,14 +30,16 @@ const CLIENT_ALIASES: Record<string, ClientId> = {
 	orca: "opencode",
 };
 
-function entryPoint(): { command: string; args: string[] } {
-	const script = fileURLToPath(import.meta.url);
-	// npx unpacks into a cache directory that npm may prune; point clients at the
-	// stable package spec instead of a path that can disappear.
-	if (script.includes(`${sep}_npx${sep}`) || script.includes(`${sep}.npm${sep}_npx${sep}`)) {
-		return { command: "npx", args: ["-y", "wikivibe-images-mcp", "mcp"] };
-	}
-	return { command: process.execPath, args: [script, "mcp"] };
+/**
+ * Clients must not depend on the checkout path or the npx cache, both of which move.
+ * Copy the running bundle into ~/.wikivibe/bin and point every client at that copy.
+ */
+async function installStableCopy(): Promise<string> {
+	const target = join(configDir(), "bin", "wikivibe-images-mcp.js");
+	await mkdir(join(configDir(), "bin"), { recursive: true, mode: 0o700 });
+	await copyFile(fileURLToPath(import.meta.url), target);
+	await chmod(target, 0o755);
+	return target;
 }
 
 function printHelp(): void {
@@ -252,7 +255,8 @@ async function setup(argv: string[]): Promise<void> {
 					if (!mapped) throw new Error(`Unknown client: ${name}`);
 					return mapped;
 				});
-	const entry = entryPoint();
+	const script = await installStableCopy();
+	const entry = { command: process.execPath, args: [script, "mcp"] };
 	for (const client of clients) {
 		try {
 			const path = await setupOne(client, entry);
