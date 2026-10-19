@@ -1,11 +1,11 @@
 {
-  "name": "wikivibe-mcp",
+  "name": "wikivibe-images-mcp",
   "version": "0.1.0",
   "description": "Generate and edit images through WikiVibe from any MCP-capable agent (OMP, Claude Code, Codex, Cursor, opencode)",
   "type": "module",
   "bin": {
-    "wikivibe": "dist/cli.js",
-    "wikivibe-mcp": "dist/cli.js"
+    "wikivibe-images": "dist/cli.js",
+    "wikivibe-images-mcp": "dist/cli.js"
   },
   "files": [
     "dist",

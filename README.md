@@ -1,4 +1,4 @@
-# wikivibe-mcp
+# wikivibe-images-mcp
 
 MCP-сервер для генерации и редактирования изображений через [WikiVibe](https://wikivibe.ru).
 Работает в любом агенте с поддержкой MCP: **OMP**, **Codex CLI**, **Claude Code**, **Cursor**,
@@ -10,7 +10,7 @@ MCP-сервер для генерации и редактирования из�
 ┌──────────────┐
 │ OMP          │─┐
 │ Codex CLI    │─┤   stdio    ┌───────────────┐   HTTPS   ┌──────────────────┐
-│ Claude Code  │─┼───────────▶│ wikivibe-mcp  │──────────▶│ api.wikivibe.ru  │
+│ Claude Code  │─┼───────────▶│wikivibe-images│──────────▶│ api.wikivibe.ru  │
 │ Cursor       │─┤            │  (один бинарь)│           │ /images/…        │
 │ opencode     │─┘            └───────┬───────┘           └──────────────────┘
 └──────────────┘                      │
@@ -20,8 +20,8 @@ MCP-сервер для генерации и редактирования из�
 ## Быстрый старт
 
 ```bash
-npx -y wikivibe-mcp login        # сохранить ключ (один раз)
-npx -y wikivibe-mcp setup all    # прописать сервер во все найденные агенты
+npx -y wikivibe-images-mcp login        # сохранить ключ (один раз)
+npx -y wikivibe-images-mcp setup all    # прописать сервер во все найденные агенты
 ```
 
 Перезапустить агент и попросить:
@@ -33,7 +33,7 @@ npx -y wikivibe-mcp setup all    # прописать сервер во все �
 `setup` без аргументов или с `all` обходит все клиенты; можно указать выборочно:
 
 ```bash
-npx -y wikivibe-mcp setup omp codex
+npx -y wikivibe-images-mcp setup omp codex
 ```
 
 Доступные имена: `omp`, `claude`, `codex`, `cursor`, `opencode` (она же `orca`).
@@ -49,7 +49,7 @@ npx -y wikivibe-mcp setup omp codex
   "mcpServers": {
     "wikivibe": {
       "command": "npx",
-      "args": ["-y", "wikivibe-mcp", "mcp"],
+      "args": ["-y", "wikivibe-images-mcp", "mcp"],
       "timeout": 300000
     }
   }
@@ -61,14 +61,14 @@ npx -y wikivibe-mcp setup omp codex
 ```toml
 [mcp_servers.wikivibe]
 command = "npx"
-args = ["-y", "wikivibe-mcp", "mcp"]
+args = ["-y", "wikivibe-images-mcp", "mcp"]
 tool_timeout_sec = 300
 ```
 
 **Claude Code**:
 
 ```bash
-claude mcp add --scope user wikivibe -- npx -y wikivibe-mcp mcp
+claude mcp add --scope user wikivibe -- npx -y wikivibe-images-mcp mcp
 ```
 
 **Cursor** — `~/.cursor/mcp.json`: тот же JSON, что и для OMP.
@@ -80,7 +80,7 @@ claude mcp add --scope user wikivibe -- npx -y wikivibe-mcp mcp
   "mcp": {
     "wikivibe": {
       "type": "local",
-      "command": ["npx", "-y", "wikivibe-mcp", "mcp"],
+      "command": ["npx", "-y", "wikivibe-images-mcp", "mcp"],
       "enabled": true
     }
   }
@@ -122,10 +122,10 @@ claude mcp add --scope user wikivibe -- npx -y wikivibe-mcp mcp
 В конфиги агентов он не попадает — там лишь команда запуска.
 
 ```bash
-npx -y wikivibe-mcp login          # интерактивно, ввод скрыт
-npx -y wikivibe-mcp login --key sk-…   # для CI
-npx -y wikivibe-mcp import         # подхватить WIKIVIBE_API_KEY из ~/.omp/.env или ./.env
-npx -y wikivibe-mcp status         # проверить ключ, base URL и доступные модели
+npx -y wikivibe-images-mcp login          # интерактивно, ввод скрыт
+npx -y wikivibe-images-mcp login --key sk-…   # для CI
+npx -y wikivibe-images-mcp import         # подхватить WIKIVIBE_API_KEY из ~/.omp/.env или ./.env
+npx -y wikivibe-images-mcp status         # проверить ключ, base URL и доступные модели
 ```
 
 Приоритет источников: `WIKIVIBE_API_KEY` → `~/.wikivibe/credentials.json`.
@@ -143,8 +143,8 @@ npx -y wikivibe-mcp status         # проверить ключ, base URL и д
 ## CLI без агента
 
 ```bash
-npx -y wikivibe-mcp image "постер: закат над морем, минимализм"
-npx -y wikivibe-mcp models
+npx -y wikivibe-images-mcp image "постер: закат над морем, минимализм"
+npx -y wikivibe-images-mcp models
 ```
 
 ## Ошибки

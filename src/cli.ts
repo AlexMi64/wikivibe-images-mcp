@@ -34,7 +34,7 @@ function entryPoint(): { command: string; args: string[] } {
 	// npx unpacks into a cache directory that npm may prune; point clients at the
 	// stable package spec instead of a path that can disappear.
 	if (script.includes(`${sep}_npx${sep}`) || script.includes(`${sep}.npm${sep}_npx${sep}`)) {
-		return { command: "npx", args: ["-y", "wikivibe-mcp", "mcp"] };
+		return { command: "npx", args: ["-y", "wikivibe-images-mcp", "mcp"] };
 	}
 	return { command: process.execPath, args: [script, "mcp"] };
 }
@@ -43,14 +43,14 @@ function printHelp(): void {
 	console.log(`wikivibe — WikiVibe image generation for coding agents
 
 Usage:
-  wikivibe                     Run the MCP server over stdio (what clients call)
-  wikivibe mcp                 Same, explicit
-  wikivibe login [--key KEY]   Save an API key to ${credentialsPath()}
-  wikivibe status              Show the resolved key, base URL, and image models
-  wikivibe models              List image models
-  wikivibe image <prompt>      Generate an image from the shell
-  wikivibe setup [clients]     Register the MCP server in agent configs
-                               clients: omp, claude, codex, cursor, opencode, all
+  wikivibe-images                     Run the MCP server over stdio (what clients call)
+  wikivibe-images mcp                 Same, explicit
+  wikivibe-images login [--key KEY]   Save an API key to ${credentialsPath()}
+  wikivibe-images status              Show the resolved key, base URL, and image models
+  wikivibe-images models              List image models
+  wikivibe-images image <prompt>      Generate an image from the shell
+  wikivibe-images setup [clients]     Register the MCP server in agent configs
+                                      clients: omp, claude, codex, cursor, opencode, all
 
 Environment:
   WIKIVIBE_API_KEY     Overrides the stored key
@@ -138,7 +138,7 @@ async function status(): Promise<void> {
 async function image(argv: string[]): Promise<void> {
 	const prompt = argv.join(" ").trim();
 	if (!prompt) {
-		console.error('Usage: wikivibe image "<prompt>"');
+		console.error('Usage: wikivibe-images image "<prompt>"');
 		process.exitCode = 1;
 		return;
 	}
